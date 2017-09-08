@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Upload images to server using Node JS</title>
+    <script src="http://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="http://cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
+    <style>
+        #preview-result thead th{
+            position: relative;
+            padding: 2px 4px;
+        }
+        #preview-result table {
+            border-collapse: separate;
+            position: relative;
+            border-spacing: 0;
+            margin: 0;
+            border-width: 0;
+            table-layout: fixed;
+            outline-width: 0;
+        }
+        #preview-result td {
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+    height: 22px;
+    empty-cells: show;
+    line-height: 21px;
+    padding: 0 4px 0 4px;
+    background-color: #FFF;
+    vertical-align: top;
+    overflow: hidden;
+    outline-width: 0;
+    white-space: pre-line;
+}
+    </style>
+
+</head>
+<body>
+    <form id="frmUploader" enctype="multipart/form-data" action="api/Upload/" method="post">
+        <input type="file" name="imgUploader" multiple />
+        <input type="submit" name="submit" id="btnSubmit" value="Upload" />
+    </form>
+
+    <h1>请选择下载文件：</h1>
+    <div id="files">
+        <ul id="files">
+
+        </ul>
+    </div>
+
+    <div onclick="preview()">
+        点击预览线上文件test.xls
+    </div>
+    <span onclick='priviewAnyshare()' >预览anyShare文件</span>
+    <div id="preview-result">
+        预览结果显示在这里
+    </div>
+
+    
+</body>
+<script>
+    $(document).ready(function () {
+        var options = {
+            beforeSubmit: showRequest,  // pre-submit callback
+            success: showResponse  // post-submit callback
+        };
+        // bind to the form's submit event
+        $('#frmUploader').submit(function () {
+            $(this).ajaxSubmit(options);
+            // always return false to prevent standard browser submit and page navigation
+            return false;
+        });
+
+        /* 请求显示服务器上的文件 */
+         $.ajax({
+            url:"/api/files",
+            success:function(data){
+                //data可能是xmlDoc、jsonObj、html、text等等
+                JSON.parse(data).files.forEach(function(item){
+                    $('#files').append(`<li onClick="a('${item}')" data-name="${item}">${item}</li>`)
+                })
+            }
+        });
+    });
+    function a(item) {
+         $.ajax({
+            url:`/file/${item}`,
+            success:function(data){
+                alert(1)
+            }
+        }); 
+    }
+    // pre-submit callback
+    function showRequest(formData, jqForm, options) {
+        alert('Uploading is starting.');
+        return true;
+    }
+    // post-submit callback
+    function showResponse(responseText, statusText, xhr, $form) {
+        alert('status: ' + statusText + '\n\nresponseText: \n' + responseText );
+    }
+
+    function preview() {
+        $.ajax({
+            url:"/preview",
+            success:function(data){
+                //data可能是xmlDoc、jsonObj、html、text等等
+
+                $("#preview-result").html(JSON.parse(data).worksheet);
+            }
+        });
+    }
+    function priviewAnyshare() {
+        $.ajax({
+            url:"/priviewAnyshare",
+            success:function(data){
+                //data可能是xmlDoc、jsonObj、html、text等等
+
+                $("#preview-result").html(JSON.parse(data).file);
+            }
+        });
+    }
+    
+</script>
